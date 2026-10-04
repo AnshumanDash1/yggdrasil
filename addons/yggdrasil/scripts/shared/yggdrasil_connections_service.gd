@@ -266,6 +266,7 @@ func restore_connections(from_node: YggdrasilNodeButton) -> void:
 
 		line_created.emit(line, source_node.id, from_node.id)
 		node_connected.emit(source_node, from_node.id)
+
 func _update_line_visibility(line: YggdrasilConnection, normal_state: bool = false) -> void:
 	if Engine.is_editor_hint():
 		line.visible = true
