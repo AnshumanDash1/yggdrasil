@@ -40,8 +40,7 @@ func load_tree(tree_data: YggdrasilTree) -> void:
 			var line_data = node_data.line_data.get(out_node_id, YggdrasilLineData.new())
 			_connect_nodes(line, node, target_node, line_data)
 			_tree_view.lines_container.add_child(line)
-			if not _tree_data.revealed:
-				line.visible = false
+			_update_line_visibility(line, true)
 			line_created.emit(line, node_data.id, out_node_id)
 			node_connected.emit(node, out_node_id)
 	
@@ -73,6 +72,7 @@ func create_connection(from_node: YggdrasilNodeButton, to_node: YggdrasilNodeBut
 
 	_connect_nodes(line, from_node, to_node, line_data)
 	_tree_view.lines_container.add_child(line)
+	_update_line_visibility(line)
 
 	from_node.line_data[to_node.id] = line_data
 
@@ -163,6 +163,7 @@ func update_connected_lines(node: YggdrasilNodeButton):
 			if target_node:
 				line.clear_points()
 				_connect_nodes(line, node, target_node, node.line_data[node_id])
+				_update_line_visibility(line)
 	
 	for node_id in node.in_nodes:
 		var line: YggdrasilConnection = _tree_view.lines_container.get_node_or_null("Line_%d_%d" % [node_id, node.id])
@@ -171,6 +172,7 @@ func update_connected_lines(node: YggdrasilNodeButton):
 			if source_node:
 				line.clear_points()
 				_connect_nodes(line, source_node, node, source_node.line_data[node.id])
+				_update_line_visibility(line)
 	
 func _get_center_position(node: Control) -> Vector2:
 	return node.position + (node.size / 2)
@@ -217,8 +219,7 @@ func _refresh_line_state(node_id: int, neighbor_id: int, is_out: bool):
 		line.visible = true
 	else:
 		line.texture = _tree_data.line_texture_normal
-		if not _tree_data.revealed:
-			line.visible = false
+		_update_line_visibility(line, true)
 
 func restore_connections(from_node: YggdrasilNodeButton) -> void:
 	for to_node_id in from_node.out_nodes:
@@ -238,6 +239,7 @@ func restore_connections(from_node: YggdrasilNodeButton) -> void:
 		
 		_connect_nodes(line, from_node, to_node, from_node.line_data[to_node.id])
 		_tree_view.lines_container.add_child(line)
+		_update_line_visibility(line)
 
 		to_node.in_nodes.append(from_node.id)
 		line_created.emit(line, from_node.id, to_node.id)
@@ -260,6 +262,12 @@ func restore_connections(from_node: YggdrasilNodeButton) -> void:
 		
 		_connect_nodes(line, source_node, from_node, source_node.line_data[from_node.id])
 		_tree_view.lines_container.add_child(line)
+		_update_line_visibility(line)
 
 		line_created.emit(line, source_node.id, from_node.id)
 		node_connected.emit(source_node, from_node.id)
+func _update_line_visibility(line: YggdrasilConnection, normal_state: bool = false) -> void:
+	if Engine.is_editor_hint():
+		line.visible = true
+	elif normal_state:
+		line.visible = _tree_data.revealed

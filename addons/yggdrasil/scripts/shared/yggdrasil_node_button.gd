@@ -203,8 +203,7 @@ func set_state(new_state: Yggdrasil.AllocationState):
 	match state:
 		Yggdrasil.AllocationState.NORMAL:
 			_update_border(border_normal)
-			if not tree.revealed:
-				visible = false
+			visible = Engine.is_editor_hint() or tree.revealed
 		Yggdrasil.AllocationState.INTERMEDIATE:
 			_update_border(border_intermediate)
 			visible = true
